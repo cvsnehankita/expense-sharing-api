@@ -73,8 +73,18 @@ API should be scalable, efficient, and capable of handling high concurrency.
 - POST /settlements - Settle payment
 - GET /expenses/group/{id}/balances - View balances
 
+## 3. Set Up Google OAuth2
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Create a new project or select existing
+3. Enable **Google+ API**
+4. Create **OAuth 2.0 Client ID**
+5. Add authorized redirect URI: http://localhost:8080/login/oauth2/code/google
+6. Copy Client ID and Client Secret to `application.properties`
+
+
 ## Sample request payload
-- Register user json
+
+#### Register New User
   - {
     "name": "John Doe",
     "email": "john@example.com",
@@ -88,7 +98,8 @@ API should be scalable, efficient, and capable of handling high concurrency.
     "name": "John Doe",
     "role": "USER"
     }
-- Login 
+
+#### Login
   -{
   "email": "john@example.com",
   "password": "ppp111"
@@ -100,8 +111,9 @@ API should be scalable, efficient, and capable of handling high concurrency.
   "email": "john@example.com",
   "name": "John Doe",
   "role": "USER"
-  }
-- Add Group
+  } 
+
+### Add Group
   - http://localhost:8080/api/groups?name=WeekendTrip2&userIds=2
   - Output {
     "id": 2,
@@ -109,7 +121,8 @@ API should be scalable, efficient, and capable of handling high concurrency.
     "createdAt": null,
     "version": 0
     }
-- GetGroups
+
+### GetGroups
   - output [
     {
     "id": 1,
