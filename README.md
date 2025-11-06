@@ -53,8 +53,9 @@ API should be scalable, efficient, and capable of handling high concurrency.
 
 ## Local Apis for Testing
 - BaseURL: http://localhost:8080
-- http://localhost:8080/register
-- http://localhost:8080/login
+- http://localhost:8080/api/auth/register
+- http://localhost:8080/api/auth/loginx
+- http://localhost:8080/api/auth/me
 - http://localhost:8080/logi/actuator/health
 - http://localhost:8080/groups
 - http://localhost:8080/groups/id
@@ -62,6 +63,7 @@ API should be scalable, efficient, and capable of handling high concurrency.
 - http://localhost:8080/expense
 - http://localhost:8080/groups/id
 - http://localhost:8080/api/expense/group/name
+- http://localhost:8080/oauth2/authorization/google
 
 ## Endpoints
 - POST /register - Register user
@@ -70,3 +72,58 @@ API should be scalable, efficient, and capable of handling high concurrency.
 - POST /expenses - Add expense
 - POST /settlements - Settle payment
 - GET /expenses/group/{id}/balances - View balances
+
+## Sample request payload
+- Register user json
+  - {
+    "name": "John Doe",
+    "email": "john@example.com",
+    "password": "ppp111"
+    }
+  - Output
+  - {
+    "token": "eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiVVNFUiIsInN1YiI6ImpvaG5AZXhhbXBsZS5jb20iLCJpYXQiOjE3NjI0MzM1ODMsImV4cCI6MTc2MjUxOTk4M30.SXXhsZ7xEhIZxMU1Tp1OgKieIyC-VVTitDn8VSKogok",
+    "type": "Bearer",
+    "email": "john@example.com",
+    "name": "John Doe",
+    "role": "USER"
+    }
+- Login 
+  -{
+  "email": "john@example.com",
+  "password": "ppp111"
+  }
+- Output 
+- {
+  "token": "eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiVVNFUiIsInN1YiI6ImpvaG5AZXhhbXBsZS5jb20iLCJpYXQiOjE3NjI0MzI5MDQsImV4cCI6MTc2MjUxOTMwNH0.P11dYlrnTyw2hEQiRK4-o-IMLSKZSZxmSH6YNx_6fYs",
+  "type": "Bearer",
+  "email": "john@example.com",
+  "name": "John Doe",
+  "role": "USER"
+  }
+- Add Group
+  - http://localhost:8080/api/groups?name=WeekendTrip2&userIds=2
+  - Output {
+    "id": 2,
+    "name": "WeekendTrip2",
+    "createdAt": null,
+    "version": 0
+    }
+- GetGroups
+  - output [
+    {
+    "id": 1,
+    "name": "WeekendTrip",
+    "createdAt": null,
+    "version": 0
+    },
+    {
+    "id": 2,
+    "name": "WeekendTrip2",
+    "createdAt": null,
+    "version": 0
+    }
+    ]
+
+## Contact
+email: cvsnehankita@gmail.com
