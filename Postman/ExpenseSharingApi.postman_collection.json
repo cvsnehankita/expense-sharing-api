@@ -99,7 +99,7 @@
 					"bearer": [
 						{
 							"key": "token",
-							"value": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiVVNFUiIsInN1YiI6ImpvaG5AZXhhbXBsZS5jb20iLCJpYXQiOjE3NjI0MzA0NTgsImV4cCI6MTc2MjUxNjg1OH0.4fqWMbJMv63SSlIFtQSwdctfJzgHS_5TDqqbqPGFGGI",
+							"value": "eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiVVNFUiIsInN1YiI6ImpvaG5AZXhhbXBsZS5jb20iLCJpYXQiOjE3NjI0MzM1ODMsImV4cCI6MTc2MjUxOTk4M30.SXXhsZ7xEhIZxMU1Tp1OgKieIyC-VVTitDn8VSKogok",
 							"type": "string"
 						}
 					]
@@ -113,7 +113,7 @@
 					},
 					{
 						"key": "Authorization",
-						"value": "Bearer",
+						"value": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiVVNFUiIsInN1YiI6ImpvaG5AZXhhbXBsZS5jb20iLCJpYXQiOjE3NjI0MzI5MDQsImV4cCI6MTc2MjUxOTMwNH0.P11dYlrnTyw2hEQiRK4-o-IMLSKZSZxmSH6YNx_6fYs\"",
 						"type": "text"
 					}
 				],
@@ -136,6 +136,13 @@
 					"path": [
 						"api",
 						"groups"
+					],
+					"query": [
+						{
+							"key": "name",
+							"value": "WeekendTrip",
+							"disabled": true
+						}
 					]
 				}
 			},
@@ -152,7 +159,7 @@
 					"bearer": [
 						{
 							"key": "token",
-							"value": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiVVNFUiIsInN1YiI6ImpvaG5AZXhhbXBsZS5jb20iLCJpYXQiOjE3NjI0MzA0NTgsImV4cCI6MTc2MjUxNjg1OH0.4fqWMbJMv63SSlIFtQSwdctfJzgHS_5TDqqbqPGFGGI",
+							"value": "eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiVVNFUiIsInN1YiI6ImpvaG5AZXhhbXBsZS5jb20iLCJpYXQiOjE3NjI0MzM1ODMsImV4cCI6MTc2MjUxOTk4M30.SXXhsZ7xEhIZxMU1Tp1OgKieIyC-VVTitDn8VSKogok",
 							"type": "string"
 						}
 					]
@@ -227,7 +234,7 @@
 					"bearer": [
 						{
 							"key": "token",
-							"value": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiVVNFUiIsInN1YiI6ImpvaG5AZXhhbXBsZS5jb20iLCJpYXQiOjE3NjI0MzA0NTgsImV4cCI6MTc2MjUxNjg1OH0.4fqWMbJMv63SSlIFtQSwdctfJzgHS_5TDqqbqPGFGGI",
+							"value": "eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiVVNFUiIsInN1YiI6ImpvaG5AZXhhbXBsZS5jb20iLCJpYXQiOjE3NjI0MzM1ODMsImV4cCI6MTc2MjUxOTk4M30.SXXhsZ7xEhIZxMU1Tp1OgKieIyC-VVTitDn8VSKogok",
 							"type": "string"
 						}
 					]
@@ -242,7 +249,8 @@
 					{
 						"key": "Authorization",
 						"value": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiVVNFUiIsInN1YiI6ImpvaG5AZXhhbXBsZS5jb20iLCJpYXQiOjE3NjI0MzA0NTgsImV4cCI6MTc2MjUxNjg1OH0.4fqWMbJMv63SSlIFtQSwdctfJzgHS_5TDqqbqPGFGGI",
-						"type": "text"
+						"type": "text",
+						"disabled": true
 					}
 				],
 				"body": {
@@ -255,7 +263,7 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:8080/api/groups?name=WeekendTrip&userIds=1",
+					"raw": "http://localhost:8080/api/groups?name=WeekendTrip2&userIds=2",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -268,11 +276,11 @@
 					"query": [
 						{
 							"key": "name",
-							"value": "WeekendTrip"
+							"value": "WeekendTrip2"
 						},
 						{
 							"key": "userIds",
-							"value": "1"
+							"value": "2"
 						}
 					]
 				}
@@ -282,6 +290,16 @@
 		{
 			"name": "AddExpenseApi",
 			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiVVNFUiIsInN1YiI6ImpvaG5AZXhhbXBsZS5jb20iLCJpYXQiOjE3NjI0MzM1ODMsImV4cCI6MTc2MjUxOTk4M30.SXXhsZ7xEhIZxMU1Tp1OgKieIyC-VVTitDn8VSKogok",
+							"type": "string"
+						}
+					]
+				},
 				"method": "POST",
 				"header": [
 					{
@@ -305,14 +323,25 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:8080/expense",
+					"raw": "http://localhost:8080/api/expenses?name=Group1&userIds=1",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "8080",
 					"path": [
-						"expense"
+						"api",
+						"expenses"
+					],
+					"query": [
+						{
+							"key": "name",
+							"value": "Group1"
+						},
+						{
+							"key": "userIds",
+							"value": "1"
+						}
 					]
 				}
 			},
