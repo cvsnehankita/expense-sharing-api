@@ -12,15 +12,14 @@ public class JwtTestGenerator {
         JwtService jwtService = new JwtService();
 
 
-
         // Replace with any username/email you want to test
         String testUsername = "admin@example.com";
 
         // Generate token directly
-        String token = jwtService.generateTokenResponse(testUsername).getToken();
+       // String token = jwtService.generateTokenResponse(testUsername).getToken();
 
-        System.out.println("JWT Token for testing:");
-        System.out.println(token);
+       // System.out.println("JWT Token for testing:");
+        //System.out.println(token);
     }
 
 }

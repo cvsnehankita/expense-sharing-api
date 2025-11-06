@@ -11,7 +11,9 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -27,70 +29,95 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import java.util.Collections;
 
 @Configuration
+@EnableWebSecurity
+@EnableMethodSecurity(prePostEnabled = true)
 @RequiredArgsConstructor
 public class SecurityConfig {
 
     private final UserRepository userRepository;
     private final CustomUserDetailsService userDetailsService;
     private final JwtAuthFilter jwtAuthFilter;
+    private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
 
-    /**
-     * Security chain for API endpoints and OAuth2 login
-     */
     @Bean
-    public SecurityFilterChain apiSecurity(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+
         http
                 .csrf(csrf -> csrf.disable())
+                .cors(cors -> cors.disable())  // Configure properly in production
                 .headers(headers -> headers.frameOptions(frame -> frame.disable()))
+
                 .authorizeHttpRequests(auth -> auth
+                        // Public endpoints
                         .requestMatchers(
+                                "/",
                                 "/public/**",
-                                "/register/**",
+                                "/api/auth/register",
+                                "/api/auth/login",
                                 "/h2-console/**",
-                                "/login",
-                                "/oauth2/**"
+                                "/actuator/health",
+                                "/oauth2/**",
+                                "/login/oauth2/**"
                         ).permitAll()
+
+                        // Admin-only endpoints
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+
+                        // All other endpoints require authentication
                         .anyRequest().authenticated()
                 )
+                // Stateless session for JWT
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
+
+                // OAuth2 login configuration
                 .oauth2Login(oauth2 -> oauth2
                         .userInfoEndpoint(userInfo -> userInfo
-                                .userService(oauthUserService())
+                                .userService(oAuth2UserService())
                         )
-                        .defaultSuccessUrl("/login-success", true)
+                        .successHandler(oAuth2LoginSuccessHandler)
                 )
-                //.formLogin(form -> form.disable()); // disable HTML login page
-                .formLogin(form -> form
-                .loginProcessingUrl("/login")  // your POST /login endpoint
-                .defaultSuccessUrl("/welcome", true)
-                .permitAll()
-        );
+
+                // Authentication provider
+                .authenticationProvider(authenticationProvider());
+
+        // Add JWT filter before Spring Security's username/password filter
         http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
-
     /**
-     * OAuth2 user service to automatically register new users
+     * OAuth2 user service to auto-register users from Google
      */
-    private OAuth2UserService<OAuth2UserRequest, OAuth2User> oauthUserService() {
+    @Bean
+    public OAuth2UserService<OAuth2UserRequest, OAuth2User> oAuth2UserService() {
         return request -> {
             DefaultOAuth2UserService delegate = new DefaultOAuth2UserService();
             OAuth2User oAuth2User = delegate.loadUser(request);
 
             String email = oAuth2User.getAttribute("email");
             String name = oAuth2User.getAttribute("name");
+            String oauthId = oAuth2User.getAttribute("sub");  // Google's unique ID
 
+            // Auto-register or update user
             User user = userRepository.findByUserEmail(email).orElseGet(() -> {
                 User newUser = User.builder()
                         .userEmail(email)
                         .userName(name)
                         .role(Role.USER)
+                        .enabled(true)
+                        .oauthId(oauthId)
+                        .oauthProvider("google")
                         .build();
                 return userRepository.save(newUser);
             });
+            // Update OAuth ID if not set
+            if (user.getOauthId() == null) {
+                user.setOauthId(oauthId);
+                user.setOauthProvider("google");
+                userRepository.save(user);
+            }
 
             return new DefaultOAuth2User(
                     Collections.singleton(new SimpleGrantedAuthority("ROLE_" + user.getRole())),
@@ -100,9 +127,6 @@ public class SecurityConfig {
         };
     }
 
-    /**
-     * Authentication provider for role-based login
-     */
     @Bean
     public AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
@@ -111,9 +135,6 @@ public class SecurityConfig {
         return authProvider;
     }
 
-    /**
-     * AuthenticationManager bean for login API
-     */
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
