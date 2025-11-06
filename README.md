@@ -34,7 +34,7 @@ Programming Language / Framework
 • Spring Data JPA + H2 for persistence
 • Lombok
 
-Local Api
+Local Apis for Testing
 1. http://localhost:8080/register
 2. http://localhost:8080/login
 3. http://localhost:8080/logi/actuator/health
@@ -44,3 +44,10 @@ Local Api
 7. http://localhost:8080/expense
 8. http://localhost:8080/groups/id
 9. http://localhost:8080/api/expense/group/name
+
+POST /register - Register user
+POST /login - Login with JWT
+POST /groups - Create group
+POST /expenses - Add expense
+POST /settlements - Settle payment
+GET /expenses/group/{id}/balances - View balances
