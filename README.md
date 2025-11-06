@@ -3,51 +3,70 @@ Expense Sharing API
 
 Design and implement a backend system where multiple users can share expenses within
 groups. Each user logs in using OAuth. Whenever an expense is added, balances among group
-members should be updated transactionally.
+members should be updated transactional.
 
 API should be scalable, efficient, and capable of handling high concurrency.
 
-Features
-1. Create and manage groups. 
-2. Add expense (e.g., "Dinner 100 AED split among 4 people"). 
-3. Maintain balance sheet per group and per user. 
-4. Settle payments (transactional updates for payer and receiver).
+## Features
+- [User registration and authentication (JWT-based)]
+- [Role-based access control]
+- [Users can create and manage groups. ]
+- [Add and track expenses for users and groups] 
+- [Calculate and settle shared expenses]
+- [Maintain balance sheet per group and per user. ]
+- [Settle payments (transactional updates for payer and receiver).]
+- [OAuth2 login integration]
 
-Database Design (Expected Entities/You can add more as per your thought):
-1. User (id, name, email, oauthId)
-2. Group (id, name)
-3. Expense (id, amount, createdBy, groupId)
-4. Settlement (payerId, receiverId, amount, expenseId)
-5. Deliverables:
-6. REST APIs (/groups, /expenses, /settlements)
-7. Postman collection
-8. Sample DB schema
+## Database Design (Expected Entities/You can add more as per your thought)
+- [User (id, name, email, oauthId)]
+- [Group (id, name)]
+- [Expense (id, amount, createdBy, groupId)]
+- [Settlement (payerId, receiverId, amount, expenseId)]
+- [Deliverables:]
+- [REST APIs (/groups, /expenses, /settlements)]
+- [Postman collection]
+- [Sample DB schema]
 
-Transactions:
+## Transactions:
 1. Ensure ACID consistency: if settlement fails, changes should not be applied.
 2. Handle concurrent updates (e.g., 2 users updating the same expense).
 
-Programming Language / Framework
-• Java 21 with Spring Boot 3+
-• Maven
-• Spring Security + Google OAuth2 for login
-• Spring Data JPA + H2 for persistence
-• Lombok
+## Programming Language / Framework / Libraries
+- Java 21 
+- Spring Boot 3+
+- Spring Security
+- Spring Data JPA
+- Maven
+- JWT for Authentication
+- Google OAuth2 for login
+- H2 for persistence
+- Lombok
 
-Local Apis for Testing
-1. http://localhost:8080/register
-2. http://localhost:8080/login
-3. http://localhost:8080/logi/actuator/health
-4. http://localhost:8080/groups
-5. http://localhost:8080/groups/id
-6. http://localhost:8080/groups?name=GroupA&userIds=1,2
-7. http://localhost:8080/expense
-8. http://localhost:8080/groups/id
-9. http://localhost:8080/api/expense/group/name
+## Setup
+- Clone the application dev branch from Github https://github.com/cvsnehankita/expense-sharing-api/tree/dev
+- Setup your local with Java 21, and maven. 
+- Also update your JAVA_HOME and Path environments
+- Use below maven command to compile and run the application
+  - mvn clean install 
+  - mvn spring-boot:run
 
-POST /register - Register user
-POST /login - Login with JWT
-POST /groups - Create group
-POST /expenses - Add expense
-POST /settlements - Settle payment
-GET /expenses/group/{id}/balances - View balances
+
+## Local Apis for Testing
+- BaseURL: http://localhost:8080
+- http://localhost:8080/register
+- http://localhost:8080/login
+- http://localhost:8080/logi/actuator/health
+- http://localhost:8080/groups
+- http://localhost:8080/groups/id
+- http://localhost:8080/groups?name=GroupA&userIds=1,2
+- http://localhost:8080/expense
+- http://localhost:8080/groups/id
+- http://localhost:8080/api/expense/group/name
+
+## Endpoints
+- POST /register - Register user
+- POST /login - Login with JWT
+- POST /groups - Create group
+- POST /expenses - Add expense
+- POST /settlements - Settle payment
+- GET /expenses/group/{id}/balances - View balances
