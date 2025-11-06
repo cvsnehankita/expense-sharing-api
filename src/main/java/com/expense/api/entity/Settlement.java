@@ -16,22 +16,27 @@ import java.time.LocalDateTime;
 public class Settlement {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @ManyToOne
-    @JoinColumn(name = "payer_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "payer_id", nullable = false)
     private User payer;
 
-    @ManyToOne
-    @JoinColumn(name = "receiver_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "receiver_id", nullable = false)
     private User receiver;
 
+    @Column(nullable = false)
     private Double amount;
 
-    @ManyToOne
-    @JoinColumn(name = "expense_id", nullable = true)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "expense_id")
     private Expense expense;
 
+    @Builder.Default
     private LocalDateTime settledAt = LocalDateTime.now();
+
+    @Version
+    private Long version;
 }
