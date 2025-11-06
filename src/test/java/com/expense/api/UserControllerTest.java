@@ -48,16 +48,4 @@ public class UserControllerTest {
         String result = userController.home();
         assertEquals("Welcome to Expense Sharing App!", result);
     }
-
-    @Test
-    public void testAdminDashboard() {
-        String result = userController.admin();
-        assertEquals("Admin Dashboard - only accessible by ADMIN", result);
-    }
-
-    @Test
-    public void testUserDashboard() {
-        String result = userController.user();
-        assertEquals("User Dashboard - accessible by USER or ADMIN", result);
-    }
 }

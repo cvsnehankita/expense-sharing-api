@@ -32,14 +32,15 @@ Programming Language / Framework
 • Maven
 • Spring Security + Google OAuth2 for login
 • Spring Data JPA + H2 for persistence
+• Lombok
 
 Local Api
 1. http://localhost:8080/register
 2. http://localhost:8080/login
 3. http://localhost:8080/logi/actuator/health
 4. http://localhost:8080/groups
-5. http://localhost:8080/groups/1
+5. http://localhost:8080/groups/id
 6. http://localhost:8080/groups?name=GroupA&userIds=1,2
 7. http://localhost:8080/expense
-8. http://localhost:8080/groups/1
-9. http://localhost:8080/api/expense/group/Team1
+8. http://localhost:8080/groups/id
+9. http://localhost:8080/api/expense/group/name

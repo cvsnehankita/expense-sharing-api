@@ -22,14 +22,4 @@ public class UserController {
     public String home() {
         return "Welcome to Expense Sharing App!";
     }
-
-    @GetMapping("/admin/dashboard")
-    public String admin() {
-        return "Admin Dashboard - only accessible by ADMIN";
-    }
-
-    @GetMapping("/user/dashboard")
-    public String user() {
-        return "User Dashboard - accessible by USER or ADMIN";
-    }
 }
