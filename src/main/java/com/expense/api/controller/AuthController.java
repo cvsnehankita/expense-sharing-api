@@ -1,118 +1,149 @@
 package com.expense.api.controller;
 
-import com.expense.api.dto.JwtResponse;
+import com.expense.api.dto.AuthResponse;
 import com.expense.api.dto.LoginRequest;
+import com.expense.api.dto.RegisterRequest;
 import com.expense.api.entity.CustomUserDetails;
 import com.expense.api.entity.Role;
 import com.expense.api.entity.User;
 import com.expense.api.service.UserService;
-import com.expense.api.utils.JwtService;
+import com.expense.api.utils.JWTUtils;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.user.OAuth2User;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
-
+import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
 @RestController
+@RequestMapping("/api/auth")
+@RequiredArgsConstructor
+@Slf4j
 public class AuthController {
-    private final AuthenticationManager authManager;
-    private final JwtService jwtService; //
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    private final AuthenticationManager authenticationManager;
+    private final JWTUtils jwtUtil;
+    private final PasswordEncoder passwordEncoder;
+    private final UserService userService;
 
-    @Autowired
-    private UserService userService;
+    @PostMapping("/register")
+    public ResponseEntity<?> registerUser(@Valid @RequestBody RegisterRequest registerRequest) {
+        log.info("User trying to register with email: {}", registerRequest.getEmail());
 
-    public AuthController(AuthenticationManager authManager, JwtService jwtService) {
-        this.authManager = authManager;
-        this.jwtService = jwtService;
+        // Check if user already exists
+        Optional<User> existingUser = userService.findByUserEmail(registerRequest.getEmail());
+        if (existingUser.isPresent()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Email already in use"));
+        }
+
+        // Create new user
+        User newUser = User.builder()
+                .userName(registerRequest.getName())
+                .userEmail(registerRequest.getEmail())
+                .userPassword(passwordEncoder.encode(registerRequest.getPassword()))
+                .role(Role.USER)
+                .enabled(true)
+                .build();
+
+        User savedUser = userService.saveUser(newUser);
+
+        // Generate JWT token
+        String token = jwtUtil.generateToken(savedUser.getUserEmail(), savedUser.getRole().name());
+
+        AuthResponse response = new AuthResponse(
+                token,
+                savedUser.getUserEmail(),
+                savedUser.getUserName(),
+                savedUser.getRole().name()
+        );
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest loginRequest) {
         try {
-            Authentication auth = authManager.authenticate(
+            log.info("User trying to login with email: {}", loginRequest.getEmail());
+
+            // Authenticate user
+            Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
                             loginRequest.getEmail(),
                             loginRequest.getPassword()
                     )
             );
 
-            User user = ((CustomUserDetails) auth.getPrincipal()).getUser();
-          // SecurityContextHolder.getContext().setAuthentication(auth);
+            // Get user details
+            User user = userService.findByUserEmail(loginRequest.getEmail())
+                    .orElseThrow(() -> new RuntimeException("User not found"));
 
-            // Optional: generate JWT
-           /// String token = jwtService.generateToken(auth);
-            //return ResponseEntity.ok(Map.of("token", token));
+            // Generate JWT token
+            String token = jwtUtil.generateToken(user.getUserEmail(), user.getRole().name());
 
-            return ResponseEntity.ok(Map.of(
-                    "message", "Login successful",
-                    "userId", user.getUserId(),
-                    "email", user.getUserEmail()
-            ));
+            AuthResponse response = new AuthResponse(
+                    token,
+                    user.getUserEmail(),
+                    user.getUserName(),
+                    user.getRole().name()
+            );
 
-        } catch (AuthenticationException ex) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            log.error("Authentication failed: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "Invalid credentials"));
         }
     }
 
-    @PostMapping("/login1")
-    public JwtResponse login1(@Valid @RequestBody LoginRequest request) {
-
-        // Authenticate user (username/password)
-        Authentication authentication = authManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
-        );
-
-        // Generate JWT token
-        String token = jwtService.generateToken(authentication);
-
-        return new JwtResponse(token, "Bearer");
-    }
-
-    @PostMapping("/register")
-    public ResponseEntity<String> registerUser(@RequestBody User user) {
-        Optional<User> exsistingUser = userService.findByUserEmail(user.getUserEmail());
-        System.out.println("existingu: " + exsistingUser);
-        if (!exsistingUser.isEmpty()) {
-            return ResponseEntity.badRequest().body("Email already in use");
+    @GetMapping("/me")
+    public ResponseEntity<?> getCurrentUser(@AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Not authenticated");
         }
 
-        User newUser = new User();
-        newUser.setUserName(user.getUserName());
-        newUser.setUserEmail(user.getUserEmail());
-        newUser.setUserPassword(passwordEncoder.encode(user.getUserPassword())); // encode password
-        newUser.setEnabled(true);
-        newUser.setRole(Role.USER);
+        User user = userService.findByUserEmail(userDetails.getUsername())
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-        userService.saveUser(newUser);
+        System.out.println("User: " + user.getUserName());
 
-        return ResponseEntity.ok("User registered successfully");
+        Map<String, Object> userInfo = new HashMap<>();
+        userInfo.put("userId", user.getUserId());
+        userInfo.put("name", user.getUserName());
+        userInfo.put("email", user.getUserEmail());
+        userInfo.put("role", user.getRole());
+
+        return ResponseEntity.ok(userInfo);
     }
 
-    @GetMapping("/login-success")
-    public Map<String, String> loginSuccess(@AuthenticationPrincipal OAuth2User oauth2User) {
+    @GetMapping("/oauth2/success")
+    public ResponseEntity<?> oauthSuccess(@AuthenticationPrincipal OAuth2User oAuth2User) {
+        if (oAuth2User == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("OAuth2 authentication failed");
+        }
+
+        String email = oAuth2User.getAttribute("email");
+        String name = oAuth2User.getAttribute("name");
+
         Map<String, String> response = new HashMap<>();
         response.put("message", "Google login successful!");
-        if (oauth2User != null) {
-            response.put("name", oauth2User.getAttribute("name"));
-            response.put("email", oauth2User.getAttribute("email"));
-        }
-        return response;
+        response.put("email", email);
+        response.put("name", name);
+
+        return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/")
+    public ResponseEntity<String> welcome() {
+        return ResponseEntity.ok("Welcome to Expense Sharing API!");
+    }
 }
